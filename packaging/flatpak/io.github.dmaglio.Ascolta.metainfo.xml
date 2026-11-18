@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.dmaglio.Ascolta</id>
+  <name>Ascolta</name>
+  <summary>Lettore di audiolibri per KDE Plasma, compatibile con Audible</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0-or-later</project_license>
+  <description>
+    <p>Ascolta gli audiolibri che hai acquistato su Audible: libreria con ricerca e filtri, capitoli, velocità, sleep timer, posizione sincronizzata con Audible, icona nel tray e tasti multimediali.</p>
+  </description>
+  <url type="homepage">https://github.com/dmaglio/ascolta</url>
+  <url type="bugtracker">https://github.com/dmaglio/ascolta/issues</url>
+  <launchable type="desktop-id">io.github.dmaglio.Ascolta.desktop</launchable>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="0.1.0" date="2026-11-18"/>
+  </releases>
+</component>

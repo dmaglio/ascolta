@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Ascolta
+GenericName=Lettore di audiolibri
+Comment=Ascolta gli audiolibri che hai acquistato
+Exec=audible-kde
+Icon=io.github.dmaglio.Ascolta
+Terminal=false
+Categories=AudioVideo;Audio;Player;Qt;KDE;
+StartupWMClass=audible-kde

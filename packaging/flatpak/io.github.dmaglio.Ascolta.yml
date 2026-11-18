@@ -1,0 +1,83 @@
+app-id: io.github.dmaglio.Ascolta
+runtime: org.kde.Platform
+runtime-version: '6.11'
+sdk: org.kde.Sdk
+base: io.qt.PySide.BaseApp
+base-version: '6.11'
+command: audible-kde
+cleanup-commands:
+  - /app/cleanup-BaseApp.sh
+
+finish-args:
+  - --share=network
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --socket=pulseaudio
+  - --device=dri
+  - --filesystem=~/Audiolibri:create
+  - --talk-name=org.kde.StatusNotifierWatcher
+  # tray (StatusNotifierItem): Flatpak ammette il jolly solo come "prefisso.*"
+  - --own-name=org.kde.*
+
+modules:
+  # ffmpeg (CLI + libav*) e' gia' nel runtime KDE 6.11: verificato, nessun modulo.
+
+  # libplacebo e' una dipendenza obbligatoria di mpv, anche senza video
+  - name: libplacebo
+    buildsystem: meson
+    config-opts:
+      - -Dvulkan=disabled
+      - -Dopengl=disabled
+      - -Dd3d11=disabled
+      - -Dglslang=disabled
+      - -Dshaderc=disabled
+      - -Dlcms=disabled
+      - -Ddemos=false
+      - -Dtests=false
+    sources:
+      - type: git
+        url: https://code.videolan.org/videolan/libplacebo.git
+        tag: v7.349.0
+
+  # libass e' obbligatoria in mpv 0.40
+  - name: libass
+    buildsystem: autotools
+    sources:
+      - type: git
+        url: https://github.com/libass/libass.git
+        tag: 0.17.3
+
+  # libmpv solo audio. NON ANCORA COMPILATO: opzioni meson da verificare al primo build.
+  - name: libmpv
+    buildsystem: meson
+    config-opts:
+      - -Dlibmpv=true
+      - -Dcplayer=false
+      - -Dtests=false
+      - -Dgl=disabled
+      - -Dvulkan=disabled
+      - -Dwayland=disabled
+      - -Dx11=disabled
+      - -Dlua=disabled
+      - -Djavascript=disabled
+    sources:
+      - type: git
+        url: https://github.com/mpv-player/mpv.git
+        tag: v0.40.0
+
+  # Dipendenze Python offline: generato con flatpak-pip-generator (da eseguire).
+  # audible, pycryptodome, python-mpv, httpx, dbus-fast
+  - python3-deps.json
+
+  - name: audible-kde
+    buildsystem: simple
+    build-commands:
+      - pip3 install --verbose --exists-action=i --no-index --prefix=/app --no-build-isolation --no-deps .
+      - install -Dm644 packaging/flatpak/io.github.dmaglio.Ascolta.desktop -t /app/share/applications
+      - install -Dm644 packaging/flatpak/io.github.dmaglio.Ascolta.metainfo.xml -t /app/share/metainfo
+      - install -Dm644 packaging/flatpak/io.github.dmaglio.Ascolta.svg -t /app/share/icons/hicolor/scalable/apps
+    sources:
+      - type: dir
+        path: ../..
+        skip: [.git, .venv, audible_kde.egg-info]
