@@ -99,6 +99,7 @@ Kirigami.ScrollablePage {
             required property string coverUrl
             required property bool downloaded
             required property bool busy
+            required property real progress
 
             highlighted: asin === backend.nowAsin
             contentItem: RowLayout {
@@ -126,6 +127,19 @@ Kirigami.ScrollablePage {
                         text: Math.floor(card.minutes / 60) + " h " + (card.minutes % 60) + " min"
                               + (card.finished ? " · finito" : card.percent > 0 ? " · " + Math.round(card.percent) + "%" : "")
                         opacity: 0.6
+                    }
+                    RowLayout {
+                        visible: card.busy
+                        Layout.fillWidth: true
+                        QQC2.ProgressBar {
+                            Layout.fillWidth: true
+                            indeterminate: card.progress < 0
+                            value: Math.max(card.progress, 0)
+                        }
+                        QQC2.Label {
+                            text: card.progress < 0 ? "Decifro…" : Math.round(card.progress * 100) + "%"
+                            opacity: 0.7
+                        }
                     }
                     Rectangle {
                         visible: card.percent > 0 && !card.finished

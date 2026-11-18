@@ -24,7 +24,7 @@ def hms(s: float) -> str:
 
 class LibraryModel(QAbstractListModel):
     ROLES = ["asin", "title", "authors", "narrators", "series", "seq", "minutes",
-             "percent", "finished", "coverUrl", "summary", "downloaded", "busy"]
+             "percent", "finished", "coverUrl", "summary", "downloaded", "busy", "progress"]
 
     def __init__(self) -> None:
         super().__init__()
@@ -36,6 +36,7 @@ class LibraryModel(QAbstractListModel):
         self._desc = False
         self._group = False
         self.busy: set[str] = set()
+        self.progress: dict[str, float] = {}  # 0..1 scaricando, -1 = decifro
 
     def roleNames(self):
         return {Qt.UserRole + i: QByteArray(n.encode()) for i, n in enumerate(self.ROLES)}
@@ -54,6 +55,8 @@ class LibraryModel(QAbstractListModel):
             return b.path() is not None
         if name == "busy":
             return b.asin in self.busy
+        if name == "progress":
+            return self.progress.get(b.asin, 0.0)
         return getattr(b, name)
 
     def set_books(self, books: list[Book]) -> None:
@@ -128,6 +131,7 @@ class Backend(QObject):
     groupedChanged = Signal()
     tickChanged = Signal()
     sleepChanged = Signal()
+    notify = Signal(str, str)  # titolo, testo: la shell li mostra come notifica
     loginUrl = Signal(str)
     # segnali interni per rientrare nel thread principale
     _libraryReady = Signal(object, object)
@@ -439,8 +443,10 @@ class Backend(QObject):
         last = [0.0]
 
         def progress(stage: str, frac: float) -> None:
-            if time.monotonic() - last[0] > 0.5 or frac >= 1:
+            self.model.progress[b.asin] = -1.0 if stage == "decifro" else frac
+            if time.monotonic() - last[0] > 0.25 or frac >= 1:
                 last[0] = time.monotonic()
+                self._touch.emit(b.asin)
                 self._info.emit("Decifro…" if stage == "decifro"
                                 else f"Scarico «{b.title}» {frac:4.0%}")
 
@@ -448,10 +454,13 @@ class Backend(QObject):
             try:
                 self.api.download(b, progress)
                 self._info.emit(f"Scaricato «{b.title}»")
+                self.notify.emit("Download completato", b.title)
             except Exception as e:
                 self._info.emit(f"Download fallito: {e}")
+                self.notify.emit(f"Download fallito: {b.title}", str(e) or type(e).__name__)
             finally:
                 self.model.busy.discard(b.asin)
+                self.model.progress.pop(b.asin, None)
                 self._touch.emit(b.asin)
             if then_play and b.path():
                 self._play_book_thread(b)
@@ -567,6 +576,7 @@ class Backend(QObject):
             if time.monotonic() >= self._sleep_at:
                 p.pause()
                 self._sleep_at = None
+                self.notify.emit("Sleep timer", f"Riproduzione fermata: {b.title}")
                 self._flush_position()
             self.sleepChanged.emit()
         if time.monotonic() - self._last_sync >= SYNC_EVERY and not p.paused:
@@ -576,6 +586,7 @@ class Backend(QObject):
             b.finished = True
             self._flush_position(final=True)
             self._stats_close(finished=True)
+            self.notify.emit("Libro finito", b.title)
             self.model.touch(b.asin)
 
     def _flush_position(self, final: bool = False) -> None:

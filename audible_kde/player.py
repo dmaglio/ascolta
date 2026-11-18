@@ -9,10 +9,27 @@ import mpv
 
 class Player:
     def __init__(self) -> None:
-        self.mpv = mpv.MPV(video="no", audio_display="no", input_default_bindings=False,
-                           input_vo_keyboard=False, osc=False, terminal=False,
-                           keep_open="yes", force_window="no", ytdl=False,
-                           **({"ao": os.environ["AUDIBLE_KDE_AO"]} if os.environ.get("AUDIBLE_KDE_AO") else {}))
+        opts = dict(video="no", audio_display="no", input_default_bindings=False,
+                    input_vo_keyboard=False, osc=False, terminal=False,
+                    keep_open="yes", force_window="no", ytdl=False)
+        if os.environ.get("AUDIBLE_KDE_AO"):
+            opts["ao"] = os.environ["AUDIBLE_KDE_AO"]
+        # libmpv senza Lua (come nel Flatpak) non ha opzioni come ytdl e osc:
+        # si tolgono quelle sconosciute, le altre servono davvero
+        essential = {"video", "ao"}
+        while True:
+            try:
+                self.mpv = mpv.MPV(**opts)
+                break
+            except AttributeError as e:
+                # args = (messaggio, codice, (handle, nome_opzione, valore))
+                try:
+                    bad = e.args[2][1].decode().replace("-", "_")
+                except (IndexError, AttributeError):
+                    raise e
+                if bad in essential or bad not in opts:
+                    raise
+                del opts[bad]
         self.loaded = False
 
     def load(self, path: Path, start_s: float = 0.0) -> None:

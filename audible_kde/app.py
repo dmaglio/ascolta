@@ -39,6 +39,7 @@ class Shell(QObject):
         self.tray.activated.connect(self._activated)
         self.tray.show()
         backend.nowChanged.connect(self._tooltip)
+        backend.notify.connect(self._notify)
         backend.mpris.raiseRequested.connect(self.show_window)
         backend.mpris.quitRequested.connect(app.quit)
 
@@ -55,6 +56,14 @@ class Shell(QObject):
     def _tooltip(self) -> None:
         b = self.backend
         self.tray.setToolTip(f"{b.nowTitle}\n{b.nowAuthors}" if b.nowTitle else "Ascolta")
+
+    @Slot(str, str)
+    def _notify(self, title: str, text: str) -> None:
+        # con la finestra davanti i messaggi sono già nel piè di pagina
+        if self.window.isVisible() and self.window.isActive():
+            return
+        if QSystemTrayIcon.supportsMessages():
+            self.tray.showMessage(title, text, QIcon.fromTheme(ICON), 8000)
 
     def show_window(self) -> None:
         self.window.show()
