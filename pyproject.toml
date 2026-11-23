@@ -16,11 +16,13 @@ dependencies = [
   "dbus-fast>=2.0",
 ]
 # PySide6 va installato dal sistema (Fedora: python3-pyside6, kf6-kirigami)
+# Interfaccia GTK (ascolta-gtk): PyGObject, GTK4 e libadwaita dal sistema (Fedora: python3-gobject, libadwaita)
 
 [project.scripts]
 audible-kde = "audible_kde.app:main"
+ascolta-gtk = "audible_gtk.app:main"
 
 [tool.setuptools]
-packages = ["audible_kde"]
+packages = ["audible_kde", "audible_gtk"]
 [tool.setuptools.package-data]
 audible_kde = ["qml/*.qml"]

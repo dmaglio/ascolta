@@ -50,6 +50,25 @@ bene 2FA e captcha): si incolla l'indirizzo finale. Il token resta in
 segnalazioni). Libri in `~/Audiolibri` (`AUDIBLE_KDE_BOOKS`), mercato `it`
 (`AUDIBLE_KDE_LOCALE`).
 
+## Versione GTK (GNOME)
+
+Oltre a quella Qt c'è un'interfaccia GTK4 / libadwaita (`ascolta-gtk`), che usa
+gli stessi moduli di accesso, riproduzione, MPRIS e statistiche. Chiudere la
+finestra la nasconde e l'ascolto continua; si disattiva in **Preferenze →
+Resta attivo in background**. Per uscire del tutto: menu → Esci, Ctrl+Q o il
+comando *Quit* del controller multimediale.
+
+```sh
+sudo dnf install python3-gobject libadwaita mpv-libs ffmpeg
+python3 -m venv --system-site-packages .venv
+.venv/bin/pip install -e . --ignore-requires-python
+.venv/bin/ascolta-gtk
+```
+
+Manifest Flatpak in `packaging/flatpak-gtk/` (non ancora compilato). Il token
+resta in `~/.config/audible-kde/auth.json`, lo stesso della versione Qt; le
+preferenze GTK in `gtk-settings.json` accanto.
+
 ## Feedback
 
 Segnalazioni e idee sono benvenute: [issues](https://github.com/dmaglio/ascolta/issues)

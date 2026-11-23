@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Ascolta (GTK)
+GenericName=Lettore di audiolibri
+Comment=Ascolta gli audiolibri che hai acquistato
+Exec=ascolta-gtk
+Icon=io.github.dmaglio.AscoltaGtk
+Terminal=false
+Categories=AudioVideo;Audio;Player;GTK;GNOME;
+StartupWMClass=io.github.dmaglio.AscoltaGtk
+DBusActivatable=false

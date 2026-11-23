@@ -1,0 +1,74 @@
+# Versione GTK4 / libadwaita di Ascolta. NON ANCORA COMPILATA come Flatpak:
+# i moduli libplacebo, libass e libmpv sono quelli della versione Qt (anch'essi
+# da verificare al primo build) e python3-deps.json e' condiviso con essa.
+app-id: io.github.dmaglio.AscoltaGtk
+runtime: org.gnome.Platform
+runtime-version: '50'
+sdk: org.gnome.Sdk
+command: ascolta-gtk
+
+finish-args:
+  - --share=network
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --socket=pulseaudio
+  - --device=dri
+  - --filesystem=~/Audiolibri:create
+  # niente --talk-name: le notifiche e il permesso "in background" passano dai portali
+
+modules:
+  - name: libplacebo
+    buildsystem: meson
+    config-opts:
+      - -Dvulkan=disabled
+      - -Dopengl=disabled
+      - -Dd3d11=disabled
+      - -Dglslang=disabled
+      - -Dshaderc=disabled
+      - -Dlcms=disabled
+      - -Ddemos=false
+      - -Dtests=false
+    sources:
+      - type: git
+        url: https://code.videolan.org/videolan/libplacebo.git
+        tag: v7.349.0
+
+  - name: libass
+    buildsystem: autotools
+    sources:
+      - type: git
+        url: https://github.com/libass/libass.git
+        tag: 0.17.3
+
+  - name: libmpv
+    buildsystem: meson
+    config-opts:
+      - -Dlibmpv=true
+      - -Dcplayer=false
+      - -Dtests=false
+      - -Dgl=disabled
+      - -Dvulkan=disabled
+      - -Dwayland=disabled
+      - -Dx11=disabled
+      - -Dlua=disabled
+      - -Djavascript=disabled
+    sources:
+      - type: git
+        url: https://github.com/mpv-player/mpv.git
+        tag: v0.40.0
+
+  # audible, pycryptodome, python-mpv, httpx, dbus-fast (PyGObject e' nel runtime)
+  - ../flatpak/python3-deps.json
+
+  - name: ascolta-gtk
+    buildsystem: simple
+    build-commands:
+      - pip3 install --verbose --exists-action=i --no-index --prefix=/app --no-build-isolation --no-deps .
+      - install -Dm644 packaging/flatpak-gtk/io.github.dmaglio.AscoltaGtk.desktop -t /app/share/applications
+      - install -Dm644 packaging/flatpak-gtk/io.github.dmaglio.AscoltaGtk.metainfo.xml -t /app/share/metainfo
+      - install -Dm644 packaging/flatpak/io.github.dmaglio.Ascolta.svg /app/share/icons/hicolor/scalable/apps/io.github.dmaglio.AscoltaGtk.svg
+    sources:
+      - type: dir
+        path: ../..
+        skip: [.git, .venv, audible_kde.egg-info]
