@@ -49,6 +49,13 @@ def label(text: str = "", *classes: str, wrap: bool = False, xalign: float = 0.0
     return lb
 
 
+def quit_button() -> Gtk.Button:
+    """Esce del tutto (anche col background attivo): la X della finestra la nasconde soltanto."""
+    b = Gtk.Button(icon_name="system-shutdown-symbolic", tooltip_text="Esci (Ctrl+Q)",
+                   action_name="app.quit")
+    return b
+
+
 def icon_button(icon: str, tip: str, cb, flat: bool = True) -> Gtk.Button:
     b = Gtk.Button(icon_name=icon, tooltip_text=tip, valign=Gtk.Align.CENTER)
     if flat:
@@ -142,6 +149,7 @@ class LibraryPage(Adw.NavigationPage):
         header.pack_start(refresh)
         header.pack_end(Gtk.MenuButton(icon_name="open-menu-symbolic", menu_model=menu,
                                        primary=True, tooltip_text="Menu"))
+        header.pack_end(quit_button())
         view.add_top_bar(header)
 
         controls = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6,
@@ -259,7 +267,9 @@ class DetailsPage(Adw.NavigationPage):
         super().__init__(title=info.get("title", ""), tag="details")
         self.ctl, self.asin = ctl, asin
         view = Adw.ToolbarView()
-        view.add_top_bar(Adw.HeaderBar())
+        header = Adw.HeaderBar()
+        header.pack_end(quit_button())
+        view.add_top_bar(header)
         scroller = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER, vexpand=True)
         self.body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=18,
                             margin_top=18, margin_bottom=18, margin_start=18, margin_end=18)
@@ -375,7 +385,9 @@ class LoginPage(Adw.NavigationPage):
         super().__init__(title="Accedi ad Audible", tag="login")
         self.ctl, self.url = ctl, ""
         view = Adw.ToolbarView()
-        view.add_top_bar(Adw.HeaderBar())
+        header = Adw.HeaderBar()
+        header.pack_end(quit_button())
+        view.add_top_bar(header)
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12, valign=Gtk.Align.CENTER,
                       halign=Gtk.Align.CENTER, margin_start=24, margin_end=24)
         icon = Gtk.Image(icon_name="audio-headphones-symbolic", pixel_size=96)
