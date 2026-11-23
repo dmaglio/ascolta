@@ -15,6 +15,10 @@ _pending: dict[str, list] = {}  # url -> immagini in attesa
 _lock = threading.Lock()
 
 
+def _show(widget, tex: Gdk.Texture) -> None:
+    widget.set_from_paintable(tex)
+
+
 def _file(url: str):
     return CACHE / (hashlib.sha1(url.encode()).hexdigest() + ".jpg")
 
@@ -53,17 +57,17 @@ def _done(url: str, ok: bool) -> bool:
     tex = _texture(url) if ok else None
     if tex:
         for picture in waiting:
-            picture.set_paintable(tex)
+            _show(picture, tex)
     return False
 
 
 def load(url: str, picture) -> None:
-    """Mette la copertina nella Gtk.Picture, appena disponibile."""
+    """Mette la copertina nella Gtk.Image, appena disponibile."""
     if not url:
         return
     tex = _textures.get(url) or _texture(url)
     if tex:
-        picture.set_paintable(tex)
+        _show(picture, tex)
         return
     with _lock:
         first = url not in _pending

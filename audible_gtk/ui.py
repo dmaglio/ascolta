@@ -28,11 +28,9 @@ def state_text(finished: bool, percent: float) -> str:
     return f"In corso, {round(percent)}%" if percent > 0 else "Da iniziare"
 
 
-def picture(size: int) -> Gtk.Picture:
-    p = Gtk.Picture(content_fit=Gtk.ContentFit.COVER, can_shrink=True)
-    p.set_size_request(size, size)
-    p.set_halign(Gtk.Align.START)
-    p.set_valign(Gtk.Align.START)
+def picture(size: int) -> Gtk.Image:
+    """Copertina a misura fissa: una Gtk.Picture chiederebbe la dimensione dell'immagine."""
+    p = Gtk.Image(pixel_size=size, halign=Gtk.Align.START, valign=Gtk.Align.START)
     p.add_css_class("card")
     return p
 
